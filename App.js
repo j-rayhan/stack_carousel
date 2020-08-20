@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, Dimensions, FlatList, Image } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, Text, View, SafeAreaView, Dimensions, FlatList, Image, Animated } from 'react-native';
 import { EvilIcons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('screen')
@@ -98,6 +98,15 @@ const OverflowItems = ({ data }) => {
 }
 export default function App() {
   const [ data, setData ] = useState(DATA)
+  const scrollX = useRef(new Animated.Value(0)).current
+  const scrollXAnimated = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    Animated.spring(scrollXAnimated, {
+      toValue: scrollX,
+      useNativeDriver: true
+    }).start()
+  })
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar hidden />
@@ -125,10 +134,23 @@ export default function App() {
             </View>
           )
         }}
-        renderItem={({item, index}) => (
-          <View style={{ 
+        renderItem={({item, index}) => {
+          const inputRange = [ index -1, index, index + 1]
+          const translateX = scrollXAnimated.interpolate({
+            inputRange,
+            outputRange: [ 50, 0 , 100]
+          })
+          const scale = scrollXAnimated.interpolate({
+            inputRange,
+            outputRange: [ .8, 1 , 1.3]
+          })
+          return (
+          <Animated.View style={{ 
             position: 'absolute',
-            left: -ITEM_WIDTH / 2
+            left: -ITEM_WIDTH / 2,
+            transform: [{
+              translateX
+            }, { scale }]
             }}>
             <Image 
               source={{ uri: item.poster }}
@@ -137,8 +159,8 @@ export default function App() {
                 height:ITEM_HEIGHT
               }}
             />
-          </View>
-        )}
+          </Animated.View>
+        )}}
       />
     </SafeAreaView>
   );
