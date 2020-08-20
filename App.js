@@ -74,7 +74,7 @@ const OverflowItems = ({ data }) => {
                 <Text style={styles.title} numberOfLines={1}>
                   {item.title}
                 </Text>
-                <View style={styles.itemContainer}>
+                <View style={styles.itemRow}>
                   <Text style={styles.location}>
                     <EvilIcons
                       name='location'
@@ -102,7 +102,6 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar hidden />
       <OverflowItems data={data} />
-      <Text>Open up App.js to start working on your app!</Text>
     </SafeAreaView>
   );
 }
@@ -111,7 +110,31 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
     justifyContent: 'center',
   },
+  title: {
+    fontSize: 28,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: -1
+  },
+  location: {
+    fontSize: 16
+  },
+  date: {
+    fontSize: 12
+  },
+  overflowItem: {
+    height: OVERFLOW_HEIGHT,
+    padding: SPACING,
+  },
+  itemRow: {
+    flexDirection: 'row',
+    justifyContent: "space-between",
+    alignItems: 'center'
+  },
+  overflowContainer: {
+    height: OVERFLOW_HEIGHT,
+    overflow: 'hidden'
+  }
 });
