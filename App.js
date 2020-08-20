@@ -1,8 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View, SafeAreaView, Dimensions, FlatList, Image, Animated } from 'react-native';
 import { EvilIcons } from '@expo/vector-icons';
-
+import { FlingGestureHandler, Directions, State } from 'react-native-gesture-handler'
 const { width, height } = Dimensions.get('screen')
 // https://www.creative-flyers.com
 const DATA = [
@@ -68,7 +68,7 @@ const OverflowItems = ({ data }) => {
     <View style={styles.overflowContainer}>
       <View>
         {
-          data.map((item,index) => {
+          data.map((item, index) => {
             return (
               <View key={index} sytle={styles.overflowItem}>
                 <Text style={styles.title} numberOfLines={1}>
@@ -81,8 +81,8 @@ const OverflowItems = ({ data }) => {
                       size={16}
                       color='black'
                       style={{ marginRight: 5 }}
-                      />
-                      {item.location}
+                    />
+                    {item.location}
                   </Text>
                   <Text style={styles.date}>
                     {item.date}
@@ -97,7 +97,12 @@ const OverflowItems = ({ data }) => {
   )
 }
 export default function App() {
-  const [ data, setData ] = useState(DATA)
+  const [data, setData] = useState(DATA)
+  const [index, setIndex] = useState(0)
+  const setActiveIndex = useCallback((activeIndex) => {
+    setIndex(activeIndex);
+    scrollX.setValue(activeIndex)
+  })
   const scrollX = useRef(new Animated.Value(0)).current
   const scrollXAnimated = useRef(new Animated.Value(0)).current
 
@@ -106,72 +111,98 @@ export default function App() {
       toValue: scrollX,
       useNativeDriver: true
     }).start()
-    setInterval(() => {
-      scrollX.setValue(Math.floor(Math.random() * data.length))
-    }, 1500);
   })
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar hidden />
-      <OverflowItems data={data} />
-      <FlatList 
-        data={data}
-        keyExtractor={( _, index) => String(index)}
-        horizontal
-        inverted
-        scrollEnabled={false}
-        removeClippedSubviews={false}
-        contentContainerStyle={{
-          flex: 1,
-          justifyContent: "center",
-          padding: SPACING * 2
-        }}
-        CellRendererComponent={({ item, index, children, style, ...props}) => {
-          const newStyle = [
-            style,
-            {zIndex: data.length - index }
-          ]
-          return (
-            <View style={newStyle} index={index} {...props}>
-              {children}
-            </View>
-          )
-        }}
-        renderItem={({item, index}) => {
-          const inputRange = [ index -1, index, index + 1]
-          const translateX = scrollXAnimated.interpolate({
-            inputRange,
-            outputRange: [ 50, 0 , 100]
-          })
-          const scale = scrollXAnimated.interpolate({
-            inputRange,
-            outputRange: [ .8, 1 , 1.3]
-          })
+    <FlingGestureHandler
+      key="left"
+      direction={Directions.LEFT}
+      onHandlerStateChange={e => {
+        if (e.nativeEvent.state === State.END) {
+          if (index === data.length - 1) {
+            return
+          }
+          setActiveIndex(index + 1)
+        }
+      }}
+    >
 
-          const opacity = scrollXAnimated.interpolate({
-            inputRange,
-            outputRange: [ 1-1 /VISIBLE_ITEMS, 1, 0]
-          })
-          return (
-          <Animated.View style={{ 
-            position: 'absolute',
-            left: -ITEM_WIDTH / 2,
-            opacity,
-            transform: [{
-              translateX
-            }, { scale }]
-            }}>
-            <Image 
-              source={{ uri: item.poster }}
-              style={{
-                width: ITEM_WIDTH,
-                height:ITEM_HEIGHT
-              }}
-            />
-          </Animated.View>
-        )}}
-      />
-    </SafeAreaView>
+      <FlingGestureHandler
+        key="right"
+        direction={Directions.RIGHT}
+        onHandlerStateChange={e => {
+          if (e.nativeEvent.state === State.END) {
+            if (index === 0) {
+              return
+            }
+            setActiveIndex(index - 1)
+          }
+        }}
+      >
+        <SafeAreaView style={styles.container}>
+          <StatusBar hidden />
+          <OverflowItems data={data} />
+          <FlatList
+            data={data}
+            keyExtractor={(_, index) => String(index)}
+            horizontal
+            inverted
+            scrollEnabled={false}
+            removeClippedSubviews={false}
+            contentContainerStyle={{
+              flex: 1,
+              justifyContent: "center",
+              padding: SPACING * 2
+            }}
+            CellRendererComponent={({ item, index, children, style, ...props }) => {
+              const newStyle = [
+                style,
+                { zIndex: data.length - index }
+              ]
+              return (
+                <View style={newStyle} index={index} {...props}>
+                  {children}
+                </View>
+              )
+            }}
+            renderItem={({ item, index }) => {
+              const inputRange = [index - 1, index, index + 1]
+              const translateX = scrollXAnimated.interpolate({
+                inputRange,
+                outputRange: [50, 0, 100]
+              })
+              const scale = scrollXAnimated.interpolate({
+                inputRange,
+                outputRange: [.8, 1, 1.3]
+              })
+
+              const opacity = scrollXAnimated.interpolate({
+                inputRange,
+                outputRange: [1 - 1 / VISIBLE_ITEMS, 1, 0]
+              })
+              return (
+                <Animated.View style={{
+                  position: 'absolute',
+                  left: -ITEM_WIDTH / 2,
+                  opacity,
+                  transform: [{
+                    translateX
+                  }, { scale }]
+                }}>
+                  <Image
+                    source={{ uri: item.poster }}
+                    style={{
+                      width: ITEM_WIDTH,
+                      height: ITEM_HEIGHT
+                    }}
+                  />
+                </Animated.View>
+              )
+            }}
+          />
+        </SafeAreaView>
+      </FlingGestureHandler>
+    </FlingGestureHandler>
+
   );
 }
 
