@@ -106,6 +106,9 @@ export default function App() {
       toValue: scrollX,
       useNativeDriver: true
     }).start()
+    setInterval(() => {
+      scrollX.setValue(Math.floor(Math.random() * data.length))
+    }, 1500);
   })
   return (
     <SafeAreaView style={styles.container}>
@@ -144,10 +147,16 @@ export default function App() {
             inputRange,
             outputRange: [ .8, 1 , 1.3]
           })
+
+          const opacity = scrollXAnimated.interpolate({
+            inputRange,
+            outputRange: [ 1-1 /VISIBLE_ITEMS, 1, 0]
+          })
           return (
           <Animated.View style={{ 
             position: 'absolute',
             left: -ITEM_WIDTH / 2,
+            opacity,
             transform: [{
               translateX
             }, { scale }]
