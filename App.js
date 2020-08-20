@@ -105,8 +105,31 @@ export default function App() {
       <FlatList 
         data={data}
         keyExtractor={( _, index) => String(index)}
+        horizontal
+        inverted
+        scrollEnabled={false}
+        removeClippedSubviews={false}
+        contentContainerStyle={{
+          flex: 1,
+          justifyContent: "center",
+          padding: SPACING * 2
+        }}
+        CellRendererComponent={({ item, index, children, style, ...props}) => {
+          const newStyle = [
+            style,
+            {zIndex: data.length - index }
+          ]
+          return (
+            <View style={newStyle} index={index} {...props}>
+              {children}
+            </View>
+          )
+        }}
         renderItem={({item, index}) => (
-          <View>
+          <View style={{ 
+            position: 'absolute',
+            left: -ITEM_WIDTH / 2
+            }}>
             <Image 
               source={{ uri: item.poster }}
               style={{
