@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, SafeAreaView, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, SafeAreaView, Dimensions, FlatList, Image } from 'react-native';
 import { EvilIcons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('screen')
@@ -102,6 +102,21 @@ export default function App() {
     <SafeAreaView style={styles.container}>
       <StatusBar hidden />
       <OverflowItems data={data} />
+      <FlatList 
+        data={data}
+        keyExtractor={( _, index) => String(index)}
+        renderItem={({item, index}) => (
+          <View>
+            <Image 
+              source={{ uri: item.poster }}
+              style={{
+                width: ITEM_WIDTH,
+                height:ITEM_HEIGHT
+              }}
+            />
+          </View>
+        )}
+      />
     </SafeAreaView>
   );
 }
